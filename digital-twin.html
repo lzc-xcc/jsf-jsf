@@ -866,6 +866,139 @@
             box-shadow: 0 2px 10px rgba(52, 152, 219, 0.5);
         }
 
+        /* 传感器监测面板 */
+        .sensor-panel {
+            background: rgba(26, 42, 74, 0.6);
+            border-radius: 10px;
+            padding: 10px;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+        }
+
+        .sensor-category {
+            margin-bottom: 8px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(10, 22, 40, 0.5);
+        }
+
+        .sensor-category:last-child {
+            margin-bottom: 0;
+        }
+
+        .sensor-category-title {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            cursor: pointer;
+            background: rgba(52, 152, 219, 0.1);
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .sensor-category-title:hover {
+            background: rgba(52, 152, 219, 0.2);
+        }
+
+        .sensor-icon {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+
+        .expand-icon {
+            margin-left: auto;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.6);
+            transition: transform 0.3s ease;
+        }
+
+        .sensor-category.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .sensor-items {
+            display: none;
+            padding: 8px;
+        }
+
+        .sensor-category.expanded .sensor-items {
+            display: block;
+        }
+
+        .sensor-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            margin-bottom: 6px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid #3498db;
+            transition: all 0.3s ease;
+        }
+
+        .sensor-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .sensor-item:hover {
+            background: rgba(52, 152, 219, 0.2);
+        }
+
+        .sensor-id {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
+        }
+
+        .sensor-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #3498db;
+            font-family: 'Courier New', monospace;
+        }
+
+        .sensor-unit {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-left: 4px;
+        }
+
+        .sensor-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+
+        .sensor-status.normal {
+            background: #27ae60;
+            box-shadow: 0 0 8px rgba(39, 174, 96, 0.5);
+        }
+
+        .sensor-status.warning {
+            background: #f39c12;
+            box-shadow: 0 0 8px rgba(243, 156, 18, 0.5);
+            animation: pulse-warning 1s infinite;
+        }
+
+        .sensor-status.danger {
+            background: #e74c3c;
+            box-shadow: 0 0 8px rgba(231, 76, 60, 0.5);
+            animation: pulse-danger 0.5s infinite;
+        }
+
+        @keyframes pulse-warning {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes pulse-danger {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.3); }
+        }
+
         /* 滚动条样式 */
         ::-webkit-scrollbar {
             width: 6px;
@@ -882,6 +1015,113 @@
 
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(52, 152, 219, 0.7);
+        }
+
+        /* 传感器面板覆盖层 - 固定在右上角 */
+        .sensor-panel-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(10, 22, 40, 0.92);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            max-height: calc(100vh - 180px);
+            overflow-y: auto;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .sensor-panel-overlay-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #3498db;
+            margin-bottom: 12px;
+            text-align: center;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .sensor-panel-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            max-width: 500px;
+        }
+
+        .sensor-overlay-category {
+            background: rgba(26, 42, 74, 0.6);
+            border-radius: 8px;
+            padding: 8px;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+        }
+
+        .sensor-overlay-category-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sensor-overlay-items {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sensor-overlay-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 6px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+
+        .sensor-overlay-id {
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
+        }
+
+        .sensor-overlay-value {
+            color: #3498db;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+
+        .sensor-overlay-unit {
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-left: 2px;
+        }
+
+        .sensor-overlay-status {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-left: 6px;
+            flex-shrink: 0;
+        }
+
+        .sensor-overlay-status.normal {
+            background: #27ae60;
+            box-shadow: 0 0 6px rgba(39, 174, 96, 0.5);
+        }
+
+        .sensor-overlay-status.warning {
+            background: #f39c12;
+            box-shadow: 0 0 6px rgba(243, 156, 18, 0.5);
+            animation: pulse-warning 1s infinite;
+        }
+
+        .sensor-overlay-status.danger {
+            background: #e74c3c;
+            box-shadow: 0 0 6px rgba(231, 76, 60, 0.5);
+            animation: pulse-danger 0.5s infinite;
         }
     </style>
 </head>
@@ -1102,6 +1342,72 @@
                         <div><span style="color: rgba(255,255,255,0.6);">库容:</span> <span style="color: #fff; font-weight: 600;">78.5%</span></div>
                         <div><span style="color: rgba(255,255,255,0.6);">流量:</span> <span style="color: #27ae60; font-weight: 600;">156 m³/s</span></div>
                         <div><span style="color: rgba(255,255,255,0.6);">预警:</span> <span style="color: #f39c12; font-weight: 600;">Level 2</span></div>
+                    </div>
+                </div>
+
+                <!-- 传感器监测面板 -->
+                <div class="sensor-panel-overlay">
+                    <div class="sensor-panel-overlay-title">📡 传感器监测数据</div>
+                    <div class="sensor-panel-grid">
+                        <!-- 渗流传感器 -->
+                        <div class="sensor-overlay-category" id="seepage-sensors-overlay">
+                            <div class="sensor-overlay-category-title">
+                                <span>💧 渗流</span>
+                            </div>
+                            <div class="sensor-overlay-items" id="seepage-sensors">
+                                <!-- 动态生成 -->
+                            </div>
+                        </div>
+
+                        <!-- 扬压力传感器 -->
+                        <div class="sensor-overlay-category" id="uplift-sensors-overlay">
+                            <div class="sensor-overlay-category-title">
+                                <span>⬆️ 扬压力</span>
+                            </div>
+                            <div class="sensor-overlay-items" id="uplift-sensors">
+                                <!-- 动态生成 -->
+                            </div>
+                        </div>
+
+                        <!-- 雨量传感器 -->
+                        <div class="sensor-overlay-category" id="rainfall-sensors-overlay">
+                            <div class="sensor-overlay-category-title">
+                                <span>🌧️ 雨量</span>
+                            </div>
+                            <div class="sensor-overlay-items" id="rainfall-sensors">
+                                <!-- 动态生成 -->
+                            </div>
+                        </div>
+
+                        <!-- 流速传感器 -->
+                        <div class="sensor-overlay-category" id="flowVelocity-sensors-overlay">
+                            <div class="sensor-overlay-category-title">
+                                <span>🌊 流速</span>
+                            </div>
+                            <div class="sensor-overlay-items" id="flowVelocity-sensors">
+                                <!-- 动态生成 -->
+                            </div>
+                        </div>
+
+                        <!-- 坝体裂缝传感器 -->
+                        <div class="sensor-overlay-category" id="crack-sensors-overlay">
+                            <div class="sensor-overlay-category-title">
+                                <span>⚠️ 裂缝</span>
+                            </div>
+                            <div class="sensor-overlay-items" id="crack-sensors">
+                                <!-- 动态生成 -->
+                            </div>
+                        </div>
+
+                        <!-- 位移传感器 -->
+                        <div class="sensor-overlay-category" id="displacement-sensors-overlay">
+                            <div class="sensor-overlay-category-title">
+                                <span>📏 位移</span>
+                            </div>
+                            <div class="sensor-overlay-items" id="displacement-sensors">
+                                <!-- 动态生成 -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1367,8 +1673,14 @@
             // 创建监测点
             createMonitoringPoints();
 
+            // 创建传感器接入点
+            createSensorPoints();
+            
             // 窗口调整
             window.addEventListener('resize', onWindowResize);
+            
+            // 初始化传感器面板
+            initSensorPanel();
             
             // 开始动画循环
             animate();
@@ -2189,7 +2501,461 @@
             });
         }
 
-        // 切换视角模式
+        // 创建传感器接入点
+        function createSensorPoints() {
+            // 传感器数据存储
+            window.sensorData = {
+                seepage: [],      // 渗流传感器
+                uplift: [],       // 扬压力传感器
+                rainfall: [],     // 雨量传感器
+                flowVelocity: [], // 流速传感器
+                crack: [],        // 坝体裂缝传感器
+                displacement: []  // 位移传感器
+            };
+
+            // 渗流传感器 - 大坝下游面
+            const seepageSensors = [
+                { pos: [-2, 1.5, 1.8], id: 'SE-01' },
+                { pos: [0, 1.5, 1.8], id: 'SE-02' },
+                { pos: [2, 1.5, 1.8], id: 'SE-03' }
+            ];
+
+            seepageSensors.forEach(sensor => {
+                const mesh = createSensorMesh(sensor.pos, 0x3498db, '渗流', sensor.id);
+                mesh.userData.sensorType = 'seepage';
+                mesh.userData.sensorId = sensor.id;
+            });
+
+            // 扬压力传感器 - 大坝基础
+            const upliftSensors = [
+                { pos: [-4, 0.3, 1.5], id: 'UP-01' },
+                { pos: [0, 0.3, 1.5], id: 'UP-02' },
+                { pos: [4, 0.3, 1.5], id: 'UP-03' }
+            ];
+
+            upliftSensors.forEach(sensor => {
+                const mesh = createSensorMesh(sensor.pos, 0x9b59b6, '扬压力', sensor.id);
+                mesh.userData.sensorType = 'uplift';
+                mesh.userData.sensorId = sensor.id;
+            });
+
+            // 雨量传感器 - 大坝顶部
+            const rainfallSensors = [
+                { pos: [-3, 8.2, 0], id: 'RF-01' },
+                { pos: [3, 8.2, 0], id: 'RF-02' }
+            ];
+
+            rainfallSensors.forEach(sensor => {
+                const mesh = createRainfallSensor(sensor.pos, sensor.id);
+                mesh.userData.sensorType = 'rainfall';
+                mesh.userData.sensorId = sensor.id;
+            });
+
+            // 流速传感器 - 泄洪口
+            const flowVelocitySensors = [
+                { pos: [-3, 2, 1.5], id: 'FV-01' },
+                { pos: [0, 2, 1.5], id: 'FV-02' },
+                { pos: [3, 2, 1.5], id: 'FV-03' }
+            ];
+
+            flowVelocitySensors.forEach(sensor => {
+                const mesh = createSensorMesh(sensor.pos, 0xe74c3c, '流速', sensor.id);
+                mesh.userData.sensorType = 'flowVelocity';
+                mesh.userData.sensorId = sensor.id;
+            });
+
+            // 坝体裂缝传感器 - 大坝表面
+            const crackSensors = [
+                { pos: [-5, 3, 1.6], id: 'CR-01' },
+                { pos: [5, 3, 1.6], id: 'CR-02' },
+                { pos: [-5, 5, 1.6], id: 'CR-03' }
+            ];
+
+            crackSensors.forEach(sensor => {
+                const mesh = createCrackSensor(sensor.pos, sensor.id);
+                mesh.userData.sensorType = 'crack';
+                mesh.userData.sensorId = sensor.id;
+            });
+
+            // 位移传感器 - 大坝顶部和侧面
+            const displacementSensors = [
+                { pos: [-5, 8.2, 1.5], id: 'DP-01' },
+                { pos: [5, 8.2, 1.5], id: 'DP-02' },
+                { pos: [-5.8, 4, 0], id: 'DP-03' },
+                { pos: [5.8, 4, 0], id: 'DP-04' }
+            ];
+
+            displacementSensors.forEach(sensor => {
+                const mesh = createDisplacementSensor(sensor.pos, sensor.id);
+                mesh.userData.sensorType = 'displacement';
+                mesh.userData.sensorId = sensor.id;
+            });
+
+            // 生成初始传感器数据
+            generateSensorData();
+        }
+
+        // 创建通用传感器网格
+        function createSensorMesh(position, color, label, id) {
+            const group = new THREE.Group();
+            
+            // 传感器主体
+            const bodyGeo = new THREE.BoxGeometry(0.4, 0.6, 0.3);
+            const bodyMat = new THREE.MeshStandardMaterial({
+                color: color,
+                roughness: 0.4,
+                metalness: 0.6
+            });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            group.add(body);
+
+            // 发光指示灯
+            const lightGeo = new THREE.SphereGeometry(0.08, 16, 16);
+            const lightMat = new THREE.MeshStandardMaterial({
+                color: 0x00ff00,
+                emissive: 0x00ff00,
+                emissiveIntensity: 1,
+                roughness: 0.2,
+                metalness: 0.3
+            });
+            const light = new THREE.Mesh(lightGeo, lightMat);
+            light.position.set(0, 0.25, 0.15);
+            group.add(light);
+
+            // 连接线
+            const lineGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.5, 8);
+            const lineMat = new THREE.MeshStandardMaterial({
+                color: 0x2c3e50,
+                roughness: 0.7,
+                metalness: 0.3
+            });
+            const line = new THREE.Mesh(lineGeo, lineMat);
+            line.position.set(0, 0.55, 0);
+            group.add(line);
+
+            group.position.set(position[0], position[1], position[2]);
+            group.userData.sensorLabel = label;
+            group.userData.sensorId = id;
+            
+            scene.add(group);
+            return group;
+        }
+
+        // 创建雨量传感器
+        function createRainfallSensor(position, id) {
+            const group = new THREE.Group();
+            
+            // 漏斗形雨量计
+            const funnelGeo = new THREE.CylinderGeometry(0.3, 0.1, 0.4, 16);
+            const funnelMat = new THREE.MeshStandardMaterial({
+                color: 0x34495e,
+                roughness: 0.5,
+                metalness: 0.5
+            });
+            const funnel = new THREE.Mesh(funnelGeo, funnelMat);
+            funnel.position.y = 0.2;
+            group.add(funnel);
+
+            // 集水桶
+            const bucketGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.3, 16);
+            const bucketMat = new THREE.MeshStandardMaterial({
+                color: 0x3498db,
+                roughness: 0.3,
+                metalness: 0.6,
+                transparent: true,
+                opacity: 0.8
+            });
+            const bucket = new THREE.Mesh(bucketGeo, bucketMat);
+            bucket.position.y = -0.1;
+            bucket.name = 'rainBucket';
+            group.add(bucket);
+
+            // 支架
+            const legGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.5, 8);
+            const legMat = new THREE.MeshStandardMaterial({
+                color: 0x7f8c8d,
+                roughness: 0.6,
+                metalness: 0.4
+            });
+            const leg1 = new THREE.Mesh(legGeo, legMat);
+            leg1.position.set(0.2, -0.25, 0);
+            leg1.rotation.z = 0.2;
+            group.add(leg1);
+
+            const leg2 = new THREE.Mesh(legGeo, legMat);
+            leg2.position.set(-0.2, -0.25, 0);
+            leg2.rotation.z = -0.2;
+            group.add(leg2);
+
+            group.position.set(position[0], position[1], position[2]);
+            group.userData.sensorLabel = '雨量';
+            group.userData.sensorId = id;
+            
+            scene.add(group);
+            return group;
+        }
+
+        // 创建裂缝传感器
+        function createCrackSensor(position, id) {
+            const group = new THREE.Group();
+            
+            // 裂缝检测条
+            const stripGeo = new THREE.BoxGeometry(0.8, 0.15, 0.1);
+            const stripMat = new THREE.MeshStandardMaterial({
+                color: 0xe67e22,
+                roughness: 0.5,
+                metalness: 0.5
+            });
+            const strip = new THREE.Mesh(stripGeo, stripMat);
+            strip.position.y = 0.15;
+            group.add(strip);
+
+            // 裂缝指示灯
+            const lightGeo = new THREE.SphereGeometry(0.06, 16, 16);
+            const lightMat = new THREE.MeshStandardMaterial({
+                color: 0x2ecc71,
+                emissive: 0x2ecc71,
+                emissiveIntensity: 0.8,
+                roughness: 0.2,
+                metalness: 0.3
+            });
+            const light = new THREE.Mesh(lightGeo, lightMat);
+            light.position.set(0.3, 0.15, 0.05);
+            light.name = 'crackLight';
+            group.add(light);
+
+            // 连接线
+            const wireGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.4, 8);
+            const wireMat = new THREE.MeshStandardMaterial({
+                color: 0x3498db,
+                roughness: 0.6,
+                metalness: 0.4
+            });
+            const wire = new THREE.Mesh(wireGeo, wireMat);
+            wire.position.set(0, 0.4, 0);
+            group.add(wire);
+
+            group.position.set(position[0], position[1], position[2]);
+            group.userData.sensorLabel = '裂缝';
+            group.userData.sensorId = id;
+            
+            scene.add(group);
+            return group;
+        }
+
+        // 创建位移传感器
+        function createDisplacementSensor(position, id) {
+            const group = new THREE.Group();
+            
+            // 传感器主体
+            const bodyGeo = new THREE.BoxGeometry(0.5, 0.3, 0.3);
+            const bodyMat = new THREE.MeshStandardMaterial({
+                color: 0x1abc9c,
+                roughness: 0.4,
+                metalness: 0.6
+            });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            group.add(body);
+
+            // GPS天线
+            const antennaGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.4, 8);
+            const antennaMat = new THREE.MeshStandardMaterial({
+                color: 0xecf0f1,
+                roughness: 0.3,
+                metalness: 0.7
+            });
+            const antenna = new THREE.Mesh(antennaGeo, antennaMat);
+            antenna.position.set(0.15, 0.35, 0);
+            group.add(antenna);
+
+            // 状态指示灯
+            const lightGeo = new THREE.SphereGeometry(0.05, 16, 16);
+            const lightMat = new THREE.MeshStandardMaterial({
+                color: 0x3498db,
+                emissive: 0x3498db,
+                emissiveIntensity: 1,
+                roughness: 0.2,
+                metalness: 0.3
+            });
+            const light = new THREE.Mesh(lightGeo, lightMat);
+            light.position.set(-0.2, 0.2, 0.15);
+            group.add(light);
+
+            // 基座
+            const baseGeo = new THREE.BoxGeometry(0.6, 0.1, 0.4);
+            const baseMat = new THREE.MeshStandardMaterial({
+                color: 0x7f8c8d,
+                roughness: 0.7,
+                metalness: 0.3
+            });
+            const base = new THREE.Mesh(baseGeo, baseMat);
+            base.position.y = -0.2;
+            group.add(base);
+
+            group.position.set(position[0], position[1], position[2]);
+            group.userData.sensorLabel = '位移';
+            group.userData.sensorId = id;
+            
+            scene.add(group);
+            return group;
+        }
+
+        // 生成传感器数据
+        function generateSensorData() {
+            // 渗流数据
+            for (let i = 0; i < 3; i++) {
+                window.sensorData.seepage.push({
+                    id: `SE-0${i+1}`,
+                    value: (Math.random() * 2 + 0.5).toFixed(3),
+                    unit: 'L/s',
+                    status: 'normal'
+                });
+            }
+
+            // 扬压力数据
+            for (let i = 0; i < 3; i++) {
+                window.sensorData.uplift.push({
+                    id: `UP-0${i+1}`,
+                    value: (Math.random() * 50 + 100).toFixed(1),
+                    unit: 'kPa',
+                    status: 'normal'
+                });
+            }
+
+            // 雨量数据
+            for (let i = 0; i < 2; i++) {
+                window.sensorData.rainfall.push({
+                    id: `RF-0${i+1}`,
+                    value: (Math.random() * 20).toFixed(1),
+                    unit: 'mm',
+                    status: 'normal'
+                });
+            }
+
+            // 流速数据
+            for (let i = 0; i < 3; i++) {
+                window.sensorData.flowVelocity.push({
+                    id: `FV-0${i+1}`,
+                    value: (Math.random() * 3 + 1).toFixed(2),
+                    unit: 'm/s',
+                    status: 'normal'
+                });
+            }
+
+            // 裂缝数据
+            for (let i = 0; i < 3; i++) {
+                window.sensorData.crack.push({
+                    id: `CR-0${i+1}`,
+                    value: (Math.random() * 0.5).toFixed(3),
+                    unit: 'mm',
+                    status: 'normal'
+                });
+            }
+
+            // 位移数据
+            for (let i = 0; i < 4; i++) {
+                window.sensorData.displacement.push({
+                    id: `DP-0${i+1}`,
+                    value: (Math.random() * 10 - 5).toFixed(2),
+                    unit: 'mm',
+                    status: 'normal'
+                });
+            }
+        }
+
+        // 更新传感器数据
+        function updateSensorData() {
+            // 更新渗流数据
+            window.sensorData.seepage.forEach(sensor => {
+                const change = (Math.random() - 0.5) * 0.3;
+                sensor.value = Math.max(0, (parseFloat(sensor.value) + change)).toFixed(3);
+                if (parseFloat(sensor.value) > 2) sensor.status = 'warning';
+                else sensor.status = 'normal';
+            });
+
+            // 更新扬压力数据
+            window.sensorData.uplift.forEach(sensor => {
+                const change = (Math.random() - 0.5) * 5;
+                sensor.value = Math.max(50, Math.min(200, (parseFloat(sensor.value) + change))).toFixed(1);
+                if (parseFloat(sensor.value) > 150) sensor.status = 'warning';
+                else sensor.status = 'normal';
+            });
+
+            // 更新雨量数据
+            const currentRainfall = parseInt(document.getElementById('rainfallSlider').value);
+            window.sensorData.rainfall.forEach(sensor => {
+                const baseValue = currentRainfall * 0.1 + Math.random() * 2;
+                sensor.value = Math.max(0, baseValue).toFixed(1);
+                if (currentRainfall > 30) sensor.status = 'warning';
+                else sensor.status = 'normal';
+            });
+
+            // 更新流速数据
+            const currentOutflow = parseInt(document.getElementById('outflowSlider').value);
+            window.sensorData.flowVelocity.forEach(sensor => {
+                const baseFlow = currentOutflow * 0.01 + Math.random() * 0.5;
+                sensor.value = Math.max(0, baseFlow).toFixed(2);
+                if (currentOutflow > 200) sensor.status = 'warning';
+                else sensor.status = 'normal';
+            });
+
+            // 更新裂缝数据
+            window.sensorData.crack.forEach(sensor => {
+                const change = (Math.random() - 0.5) * 0.05;
+                sensor.value = Math.max(0, (parseFloat(sensor.value) + change)).toFixed(3);
+                if (parseFloat(sensor.value) > 0.3) sensor.status = 'warning';
+                else sensor.status = 'normal';
+            });
+
+            // 更新位移数据
+            window.sensorData.displacement.forEach(sensor => {
+                const change = (Math.random() - 0.5) * 0.3;
+                sensor.value = (parseFloat(sensor.value) + change).toFixed(2);
+                if (Math.abs(parseFloat(sensor.value)) > 7) sensor.status = 'warning';
+                else sensor.status = 'normal';
+            });
+
+            // 更新传感器面板显示
+            updateSensorPanel();
+        }
+
+        // 更新传感器面板显示
+        function updateSensorPanel() {
+            const types = ['seepage', 'uplift', 'rainfall', 'flowVelocity', 'crack', 'displacement'];
+            
+            types.forEach(type => {
+                const container = document.getElementById(`${type}-sensors`);
+                if (!container || !window.sensorData[type]) return;
+                
+                container.innerHTML = '';
+                
+                window.sensorData[type].forEach(sensor => {
+                    const item = document.createElement('div');
+                    item.className = 'sensor-overlay-item';
+                    item.innerHTML = `
+                        <span class="sensor-overlay-id">${sensor.id}</span>
+                        <span class="sensor-overlay-value">${sensor.value}<span class="sensor-overlay-unit">${sensor.unit}</span></span>
+                        <span class="sensor-overlay-status ${sensor.status}"></span>
+                    `;
+                    container.appendChild(item);
+                });
+            });
+        }
+
+        // 切换传感器分类显示
+        function toggleSensorCategory(category) {
+            const element = document.querySelector(`#${category}-sensors`).parentElement;
+            if (element) {
+                element.classList.toggle('expanded');
+            }
+        }
+
+        // 初始化传感器面板
+        function initSensorPanel() {
+            // 初始化显示
+            updateSensorPanel();
+        }
+
         function toggleViewMode() {
             if (isOrthographic) {
                 // 切换回透视视角
@@ -2483,6 +3249,9 @@
         }
 
         function runSimulation() {
+            // 更新传感器数据
+            updateSensorData();
+            
             // 计算水位变化
             const rainEffect = simParams.rainfall * 0.001;
             const inflowEffect = simParams.inflow * 0.0001;
