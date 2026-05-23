@@ -1,0 +1,2045 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>"四预"防洪数字孪生协同推演平台</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        
+        body {
+            background: linear-gradient(135deg, #0a1628 0%, #1a2a4a 50%, #0d1b2a 100%);
+            color: #e0e6ed;
+        }
+
+        /* 顶部标题栏 */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(90deg, rgba(10, 22, 40, 0.95) 0%, rgba(26, 42, 74, 0.95) 50%, rgba(10, 22, 40, 0.95) 100%);
+            border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            background: linear-gradient(90deg, #3498db, #9b59b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(39, 174, 96, 0.15);
+            border: 1px solid rgba(39, 174, 96, 0.3);
+            border-radius: 20px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #27ae60;
+            border-radius: 50%;
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .current-time {
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* 主布局 */
+        .main-container {
+            display: flex;
+            height: 100%;
+            padding-top: 60px;
+        }
+
+        /* 左侧面板 */
+        .left-panel {
+            width: 320px;
+            background: rgba(10, 22, 40, 0.92);
+            border-right: 1px solid rgba(52, 152, 219, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-section {
+            padding: 15px;
+            border-bottom: 1px solid rgba(52, 152, 219, 0.15);
+        }
+
+        .panel-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #3498db;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: linear-gradient(180deg, #3498db, #2980b9);
+            border-radius: 2px;
+        }
+
+        /* 监测状态卡片 */
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .status-card {
+            background: rgba(26, 42, 74, 0.6);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .status-card:hover {
+            border-color: rgba(52, 152, 219, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .status-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #3498db;
+        }
+
+        .status-unit {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-left: 3px;
+        }
+
+        .status-icon {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        /* 预警级别 */
+        .alert-section {
+            background: rgba(26, 42, 74, 0.6);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .alert-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .alert-item:hover {
+            transform: translateX(5px);
+        }
+
+        .alert-level-1 {
+            background: rgba(39, 174, 96, 0.15);
+            border-left: 4px solid #27ae60;
+        }
+
+        .alert-level-2 {
+            background: rgba(243, 156, 18, 0.15);
+            border-left: 4px solid #f39c12;
+        }
+
+        .alert-level-3 {
+            background: rgba(231, 76, 60, 0.15);
+            border-left: 4px solid #e74c3c;
+        }
+
+        .alert-level-4 {
+            background: rgba(142, 68, 173, 0.15);
+            border-left: 4px solid #8e44ad;
+        }
+
+        .alert-icon {
+            font-size: 1.2rem;
+            margin-right: 12px;
+        }
+
+        .alert-info {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+
+        .alert-desc {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* 调度按钮 */
+        .control-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.6);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #1e8449);
+            color: white;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12, #d68910);
+            color: white;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+        }
+
+        /* 参数面板 */
+        .param-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .param-item {
+            background: rgba(26, 42, 74, 0.6);
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid rgba(52, 152, 219, 0.15);
+        }
+
+        .param-label {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 3px;
+        }
+
+        .param-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #3498db;
+            font-family: 'Courier New', monospace;
+        }
+
+        .param-target {
+            font-size: 0.65rem;
+            color: rgba(243, 156, 18, 0.8);
+            margin-top: 2px;
+        }
+
+        /* 中央3D视图区域 */
+        .center-view {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(ellipse at center, rgba(26, 42, 74, 0.3) 0%, rgba(10, 22, 40, 0.8) 100%);
+            overflow: hidden;
+        }
+
+        .view-3d {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #scene-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(10, 22, 40, 0.85);
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .control-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-key {
+            background: rgba(52, 152, 219, 0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.65rem;
+        }
+
+        .view-mode-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: rgba(52, 152, 219, 0.2);
+            border: 1px solid rgba(52, 152, 219, 0.4);
+            border-radius: 6px;
+            color: #3498db;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-mode-btn:hover {
+            background: rgba(52, 152, 219, 0.4);
+        }
+
+        .view-mode-btn.active {
+            background: rgba(52, 152, 219, 0.6);
+            color: white;
+        }
+
+        /* 右侧面板 */
+        .right-panel {
+            width: 380px;
+            background: rgba(10, 22, 40, 0.92);
+            border-left: 1px solid rgba(52, 152, 219, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 图表容器 */
+        .chart-container {
+            background: rgba(26, 42, 74, 0.6);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+            margin-bottom: 15px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .chart-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 15px;
+            font-size: 0.75rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .legend-color.real {
+            background: #3498db;
+        }
+
+        .legend-color.predict {
+            background: #9b59b6;
+        }
+
+        .legend-color.warning {
+            background: #f39c12;
+        }
+
+        .legend-color.alert {
+            background: #e74c3c;
+        }
+
+        /* 折线图 */
+        .chart-area {
+            height: 160px;
+            position: relative;
+        }
+
+        .chart-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .chart-grid {
+            stroke: rgba(52, 152, 219, 0.1);
+            stroke-width: 1;
+        }
+
+        .chart-line {
+            fill: none;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .chart-line.real {
+            stroke: #3498db;
+        }
+
+        .chart-line.predict {
+            stroke: #9b59b6;
+            stroke-dasharray: 5,3;
+        }
+
+        .chart-area-fill {
+            fill: rgba(52, 152, 219, 0.15);
+        }
+
+        .chart-point {
+            r: 4;
+            fill: #3498db;
+            stroke: #fff;
+            stroke-width: 2;
+        }
+
+        .chart-warning-line {
+            stroke: #f39c12;
+            stroke-width: 1.5;
+            stroke-dasharray: 8,4;
+        }
+
+        .chart-alert-line {
+            stroke: #e74c3c;
+            stroke-width: 1.5;
+            stroke-dasharray: 8,4;
+        }
+
+        .chart-y-label {
+            font-size: 0.65rem;
+            fill: rgba(255, 255, 255, 0.5);
+            text-anchor: end;
+        }
+
+        .chart-x-label {
+            font-size: 0.65rem;
+            fill: rgba(255, 255, 255, 0.5);
+            text-anchor: middle;
+        }
+
+        /* 预演控制面板 */
+        .simulation-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(26, 42, 74, 0.6);
+            border-radius: 10px;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+        }
+
+        .sim-btn {
+            width: 45px;
+            height: 45px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sim-btn:hover {
+            background: rgba(52, 152, 219, 0.4);
+            transform: scale(1.1);
+        }
+
+        .sim-btn.play {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .sim-btn.play:hover {
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.6);
+        }
+
+        .sim-speed {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: rgba(26, 42, 74, 0.8);
+            border-radius: 20px;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+        }
+
+        .speed-btn {
+            padding: 5px 12px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .speed-btn.active {
+            background: rgba(52, 152, 219, 0.4);
+            color: #3498db;
+        }
+
+        .speed-btn:hover {
+            background: rgba(52, 152, 219, 0.3);
+        }
+
+        /* 预案选择 */
+        .plan-selector {
+            background: rgba(26, 42, 74, 0.6);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+        }
+
+        .plan-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .plan-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .plan-item:hover {
+            border-color: rgba(52, 152, 219, 0.4);
+        }
+
+        .plan-item.active {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, 0.2);
+        }
+
+        .plan-radio {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(52, 152, 219, 0.5);
+            border-radius: 50%;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .plan-item.active .plan-radio::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: #3498db;
+            border-radius: 50%;
+        }
+
+        .plan-info {
+            flex: 1;
+        }
+
+        .plan-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+
+        .plan-desc {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 信息提示 */
+        .info-tooltip {
+            position: absolute;
+            background: rgba(10, 22, 40, 0.95);
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.8rem;
+            pointer-events: none;
+            z-index: 1000;
+            min-width: 150px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .tooltip-title {
+            font-weight: 600;
+            color: #3498db;
+            margin-bottom: 8px;
+        }
+
+        .tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .tooltip-label {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .tooltip-value {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* 动画效果 */
+        @keyframes wave {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(10px); }
+        }
+
+        .wave-animation {
+            animation: wave 3s ease-in-out infinite;
+        }
+
+        /* 滑块控制 */
+        .slider-control {
+            margin-top: 15px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 8px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: rgba(52, 152, 219, 0.3);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(52, 152, 219, 0.5);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 10px rgba(52, 152, 219, 0.5);
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(26, 42, 74, 0.5);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(52, 152, 219, 0.5);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(52, 152, 219, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部标题栏 -->
+    <header class="header">
+        <div class="header-title">"四预"防洪数字孪生协同推演平台（调度优化版）</div>
+        <div class="header-right">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>系统运行中</span>
+            </div>
+            <div class="current-time" id="currentTime"></div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <div class="main-container">
+        <!-- 左侧面板 -->
+        <div class="left-panel">
+            <div class="panel-section">
+                <div class="panel-title">水文监测与动态防汛</div>
+                <div class="status-grid">
+                    <div class="status-card">
+                        <div class="status-icon">📊</div>
+                        <div class="status-label">调度状态</div>
+                        <div class="status-value">待命监测</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-icon">💧</div>
+                        <div class="status-label">预测流量</div>
+                        <div class="status-value">1.2<span class="status-unit">m³/s</span></div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-icon">🏛️</div>
+                        <div class="status-label">大坝安全评级</div>
+                        <div class="status-value" style="color: #27ae60;">A</div>
+                    </div>
+                    <div class="status-card">
+                        <div class="status-icon">⏱️</div>
+                        <div class="status-label">系统时钟</div>
+                        <div class="status-value">正常</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">预警信息</div>
+                <div class="alert-section">
+                    <div class="alert-item alert-level-1">
+                        <span class="alert-icon">🟢</span>
+                        <div class="alert-info">
+                            <div class="alert-title">常态中南过程 (Level 1)</div>
+                            <div class="alert-desc">当前无预警</div>
+                        </div>
+                    </div>
+                    <div class="alert-item alert-level-2">
+                        <span class="alert-icon">🟡</span>
+                        <div class="alert-info">
+                            <div class="alert-title">弱降雨加加水 (Level 2)</div>
+                            <div class="alert-desc">预计2小时后到达</div>
+                        </div>
+                    </div>
+                    <div class="alert-item alert-level-3">
+                        <span class="alert-icon">🔴</span>
+                        <div class="alert-info">
+                            <div class="alert-title">较强降雨加加过程 (Level 3)</div>
+                            <div class="alert-desc">预计6小时后到达</div>
+                        </div>
+                    </div>
+                    <div class="alert-item alert-level-4">
+                        <span class="alert-icon">🟣</span>
+                        <div class="alert-info">
+                            <div class="alert-title">极端暴雨洪水过程 (Level 4)</div>
+                            <div class="alert-desc">暂未监测到</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-section">
+                <div class="panel-title">调度控制</div>
+                <div class="control-buttons">
+                    <button class="control-btn btn-primary" onclick="startMPC()">
+                        <span>⚡</span>自动化调度 (MPC)
+                    </button>
+                    <button class="control-btn btn-success" onclick="generateCurve()">
+                        <span>📈</span>生成预测曲线
+                    </button>
+                    <button class="control-btn btn-warning" onclick="adjustGate()">
+                        <span>🎚️</span>调节泄洪闸门
+                    </button>
+                    <button class="control-btn btn-danger" onclick="systemReset()">
+                        <span>🔄</span>系统全面复位
+                    </button>
+                </div>
+            </div>
+
+            <div class="panel-section" style="flex: 1; overflow-y: auto;">
+                <div class="panel-title">调度参数</div>
+                <div class="param-grid">
+                    <div class="param-item">
+                        <div class="param-label">上游降雨强度</div>
+                        <div class="param-value">1.2 mm/h</div>
+                        <div class="param-target">实时</div>
+                    </div>
+                    <div class="param-item">
+                        <div class="param-label">汇水面积</div>
+                        <div class="param-value">0.55 km²</div>
+                    </div>
+                    <div class="param-item">
+                        <div class="param-label">河道长度</div>
+                        <div class="param-value">120 km</div>
+                    </div>
+                    <div class="param-item">
+                        <div class="param-label">最小泄水量</div>
+                        <div class="param-value">50.00 m³/s</div>
+                    </div>
+                    <div class="param-item">
+                        <div class="param-label">库容上限</div>
+                        <div class="param-value">45.00 m</div>
+                    </div>
+                    <div class="param-item">
+                        <div class="param-label">安全上限水位</div>
+                        <div class="param-value">45.00 m</div>
+                    </div>
+                    <div class="param-item">
+                        <div class="param-label">安全下限水位</div>
+                        <div class="param-value">8.00 m</div>
+                    </div>
+                    <div class="param-item">
+                        <div class="param-label">调洪时长</div>
+                        <div class="param-value">20 h</div>
+                    </div>
+                    <div class="param-item">
+                        <div class="param-label">预测时段</div>
+                        <div class="param-value">30 min</div>
+                    </div>
+                    <div class="param-item">
+                        <div class="param-label">最大变幅</div>
+                        <div class="param-value">0.5 m³/s</div>
+                    </div>
+                </div>
+                <div class="slider-control">
+                    <div class="slider-label">
+                        <span>泄洪闸门开度</span>
+                        <span id="gateValue">35%</span>
+                    </div>
+                    <input type="range" id="gateSlider" min="0" max="100" value="35">
+                </div>
+            </div>
+        </div>
+
+        <!-- 中央3D视图 -->
+        <div class="center-view">
+            <div class="view-3d">
+                <div id="scene-container"></div>
+                
+                <!-- 视图模式切换 -->
+                <button class="view-mode-btn" onclick="toggleViewMode()">切换视角</button>
+                
+                <!-- 操作提示 -->
+                <div class="controls-info">
+                    <div class="control-item"><span class="control-key">左键</span>旋转视角</div>
+                    <div class="control-item"><span class="control-key">右键</span>平移视图</div>
+                    <div class="control-item"><span class="control-key">滚轮</span>缩放场景</div>
+                </div>
+                
+                <!-- 数据覆盖层 -->
+                <div style="position: absolute; top: 20px; left: 20px; background: rgba(10, 22, 40, 0.85); padding: 15px; border-radius: 10px; border: 1px solid rgba(52, 152, 219, 0.3);">
+                    <div style="font-size: 0.85rem; font-weight: 600; color: #3498db; margin-bottom: 10px;">📊 实时监测数据</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div><span style="color: rgba(255,255,255,0.6);">水位:</span> <span style="color: #fff; font-weight: 600;">32.5m</span></div>
+                        <div><span style="color: rgba(255,255,255,0.6);">库容:</span> <span style="color: #fff; font-weight: 600;">78.5%</span></div>
+                        <div><span style="color: rgba(255,255,255,0.6);">流量:</span> <span style="color: #27ae60; font-weight: 600;">156 m³/s</span></div>
+                        <div><span style="color: rgba(255,255,255,0.6);">预警:</span> <span style="color: #f39c12; font-weight: 600;">Level 2</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧面板 -->
+        <div class="right-panel">
+            <div class="panel-section" style="flex: 1; overflow-y: auto; padding: 15px;">
+                <div class="panel-title" style="margin-bottom: 15px;">上游水库压力监测 (MPa) / 实测与预测</div>
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">水位变化趋势</div>
+                        <div class="chart-legend">
+                            <div class="legend-item"><span class="legend-color real"></span><span>实测值</span></div>
+                            <div class="legend-item"><span class="legend-color predict"></span><span>预测值</span></div>
+                        </div>
+                    </div>
+                    <div class="chart-area">
+                        <svg class="chart-svg" viewBox="0 0 320 140" preserveAspectRatio="none">
+                            <!-- 网格线 -->
+                            <line x1="40" y1="20" x2="310" y2="20" class="chart-grid"/>
+                            <line x1="40" y1="50" x2="310" y2="50" class="chart-grid"/>
+                            <line x1="40" y1="80" x2="310" y2="80" class="chart-grid"/>
+                            <line x1="40" y1="110" x2="310" y2="110" class="chart-grid"/>
+                            <line x1="40" y1="130" x2="310" y2="130" class="chart-grid"/>
+                            
+                            <!-- Y轴标签 -->
+                            <text x="35" y="22" class="chart-y-label">6</text>
+                            <text x="35" y="52" class="chart-y-label">5</text>
+                            <text x="35" y="82" class="chart-y-label">4</text>
+                            <text x="35" y="112" class="chart-y-label">3</text>
+                            <text x="35" y="132" class="chart-y-label">2</text>
+                            
+                            <!-- X轴标签 -->
+                            <text x="65" y="138" class="chart-x-label">0h</text>
+                            <text x="110" y="138" class="chart-x-label">2h</text>
+                            <text x="155" y="138" class="chart-x-label">4h</text>
+                            <text x="200" y="138" class="chart-x-label">6h</text>
+                            <text x="245" y="138" class="chart-x-label">8h</text>
+                            <text x="290" y="138" class="chart-x-label">10h</text>
+                            
+                            <!-- 警戒线 -->
+                            <line x1="40" y1="35" x2="310" y2="35" class="chart-warning-line"/>
+                            <text x="315" y="37" fill="#f39c12" font-size="8">警戒线</text>
+                            
+                            <!-- 危险线 -->
+                            <line x1="40" y1="25" x2="310" y2="25" class="chart-alert-line"/>
+                            <text x="315" y="27" fill="#e74c3c" font-size="8">危险线</text>
+                            
+                            <!-- 实测曲线 -->
+                            <path class="chart-line real" d="M40,95 Q75,90 110,85 T180,75 T250,65 T310,60"/>
+                            
+                            <!-- 预测曲线 -->
+                            <path class="chart-line predict" d="M310,60 Q340,55 370,50"/>
+                            
+                            <!-- 数据点 -->
+                            <circle cx="40" cy="95" class="chart-point"/>
+                            <circle cx="110" cy="85" class="chart-point"/>
+                            <circle cx="180" cy="75" class="chart-point"/>
+                            <circle cx="250" cy="65" class="chart-point"/>
+                            <circle cx="310" cy="60" class="chart-point"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="panel-title" style="margin-top: 15px; margin-bottom: 15px;">下游水位 (m) / 实测与预测</div>
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div class="chart-title">下游水位变化</div>
+                        <div class="chart-legend">
+                            <div class="legend-item"><span class="legend-color real"></span><span>实测值</span></div>
+                            <div class="legend-item"><span class="legend-color predict"></span><span>预测值</span></div>
+                        </div>
+                    </div>
+                    <div class="chart-area">
+                        <svg class="chart-svg" viewBox="0 0 320 140" preserveAspectRatio="none">
+                            <!-- 网格线 -->
+                            <line x1="40" y1="20" x2="310" y2="20" class="chart-grid"/>
+                            <line x1="40" y1="45" x2="310" y2="45" class="chart-grid"/>
+                            <line x1="40" y1="70" x2="310" y2="70" class="chart-grid"/>
+                            <line x1="40" y1="95" x2="310" y2="95" class="chart-grid"/>
+                            <line x1="40" y1="120" x2="310" y2="120" class="chart-grid"/>
+                            
+                            <!-- Y轴标签 -->
+                            <text x="35" y="22" class="chart-y-label">15</text>
+                            <text x="35" y="47" class="chart-y-label">12</text>
+                            <text x="35" y="72" class="chart-y-label">9</text>
+                            <text x="35" y="97" class="chart-y-label">6</text>
+                            <text x="35" y="122" class="chart-y-label">3</text>
+                            
+                            <!-- X轴标签 -->
+                            <text x="65" y="130" class="chart-x-label">0h</text>
+                            <text x="110" y="130" class="chart-x-label">2h</text>
+                            <text x="155" y="130" class="chart-x-label">4h</text>
+                            <text x="200" y="130" class="chart-x-label">6h</text>
+                            <text x="245" y="130" class="chart-x-label">8h</text>
+                            <text x="290" y="130" class="chart-x-label">10h</text>
+                            
+                            <!-- 警戒线 -->
+                            <line x1="40" y1="32" x2="310" y2="32" class="chart-warning-line"/>
+                            <text x="315" y="34" fill="#f39c12" font-size="8">警戒线</text>
+                            
+                            <!-- 危险线 -->
+                            <line x1="40" y1="25" x2="310" y2="25" class="chart-alert-line"/>
+                            <text x="315" y="27" fill="#e74c3c" font-size="8">危险线</text>
+                            
+                            <!-- 预测曲线 -->
+                            <path class="chart-line predict" d="M310,65 Q340,62 370,58"/>
+                            
+                            <!-- 数据点 -->
+                            <circle cx="40" cy="85" class="chart-point"/>
+                            <circle cx="110" cy="78" class="chart-point"/>
+                            <circle cx="180" cy="72" class="chart-point"/>
+                            <circle cx="250" cy="68" class="chart-point"/>
+                            <circle cx="310" cy="65" class="chart-point"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- 预演控制 -->
+                <div class="panel-title" style="margin-top: 15px; margin-bottom: 15px;">⏯️ 推演控制</div>
+                <div class="simulation-controls">
+                    <button class="sim-btn" onclick="stepBackward()">⏮</button>
+                    <button class="sim-btn" onclick="pauseSimulation()">⏸</button>
+                    <button class="sim-btn play" onclick="playSimulation()">▶</button>
+                    <button class="sim-btn" onclick="stepForward()">⏭</button>
+                    <button class="sim-btn" onclick="resetSimulation()">🔄</button>
+                    <div class="sim-speed">
+                        <button class="speed-btn" onclick="setSpeed(0.5)">0.5x</button>
+                        <button class="speed-btn active" onclick="setSpeed(1)">1x</button>
+                        <button class="speed-btn" onclick="setSpeed(2)">2x</button>
+                        <button class="speed-btn" onclick="setSpeed(4)">4x</button>
+                    </div>
+                </div>
+
+                <!-- 预案选择 -->
+                <div class="panel-title" style="margin-top: 20px; margin-bottom: 15px;">📋 应急预案</div>
+                <div class="plan-selector">
+                    <div class="plan-item active" onclick="selectPlan('normal')">
+                        <div class="plan-radio"></div>
+                        <div class="plan-info">
+                            <div class="plan-title">正常调度方案</div>
+                            <div class="plan-desc">基于实时数据的常规泄洪调度</div>
+                        </div>
+                    </div>
+                    <div class="plan-item" onclick="selectPlan('warning')">
+                        <div class="plan-radio"></div>
+                        <div class="plan-info">
+                            <div class="plan-title">预警调度方案</div>
+                            <div class="plan-desc">针对预警级别的强化调度</div>
+                        </div>
+                    </div>
+                    <div class="plan-item" onclick="selectPlan('emergency')">
+                        <div class="plan-radio"></div>
+                        <div class="plan-info">
+                            <div class="plan-title">紧急泄洪方案</div>
+                            <div class="plan-desc">极端情况下的最大泄洪</div>
+                        </div>
+                    </div>
+                    <div class="plan-item" onclick="selectPlan('optimize')">
+                        <div class="plan-radio"></div>
+                        <div class="plan-info">
+                            <div class="plan-title">MPC优化方案</div>
+                            <div class="plan-desc">模型预测控制优化调度</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleString('zh-CN');
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // 3D场景相关变量
+        let scene, camera, renderer, controls;
+        let damGroup, buildingGroup, waterGroup, mountainGroup, rainParticles;
+        let gateMeshes = [];
+        let waterFlowParticles = [];
+        let isOrthographic = false;
+
+        // 初始化3D场景
+        function init3DScene() {
+            const container = document.getElementById('scene-container');
+            
+            // 创建场景
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a1628);
+            scene.fog = new THREE.Fog(0x0a1628, 30, 100);
+
+            // 创建相机
+            camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(15, 12, 20);
+
+            // 创建渲染器
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            // 创建控制器
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 5;
+            controls.maxDistance = 50;
+            controls.maxPolarAngle = Math.PI / 2.1;
+
+            // 添加光源
+            const ambientLight = new THREE.AmbientLight(0x404050, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(10, 20, 10);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.camera.near = 0.5;
+            directionalLight.shadow.camera.far = 100;
+            directionalLight.shadow.camera.left = -30;
+            directionalLight.shadow.camera.right = 30;
+            directionalLight.shadow.camera.top = 30;
+            directionalLight.shadow.camera.bottom = -30;
+            scene.add(directionalLight);
+
+            const fillLight = new THREE.DirectionalLight(0x3498db, 0.3);
+            fillLight.position.set(-10, 10, -10);
+            scene.add(fillLight);
+
+            // 创建地面
+            createGround();
+            
+            // 创建山体
+            createMountains();
+            
+            // 创建大坝
+            createDam();
+            
+            // 创建水库和河流
+            createWater();
+            
+            // 创建建筑群
+            createBuildings();
+            
+            // 创建道路和桥梁
+            createRoads();
+            
+            // 创建植被
+            createVegetation();
+            
+            // 创建雨水效果
+            createRain();
+            
+            // 创建监测点
+            createMonitoringPoints();
+
+            // 窗口调整
+            window.addEventListener('resize', onWindowResize);
+            
+            // 开始动画循环
+            animate();
+        }
+
+        // 创建地面
+        function createGround() {
+            const groundGeometry = new THREE.PlaneGeometry(80, 60);
+            const groundMaterial = new THREE.MeshStandardMaterial({
+                color: 0x1a2a4a,
+                roughness: 0.8,
+                metalness: 0.1
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -0.1;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // 添加网格
+            const gridHelper = new THREE.GridHelper(80, 80, 0x3498db, 0x1a2a4a);
+            gridHelper.position.y = 0;
+            scene.add(gridHelper);
+        }
+
+        // 创建山体
+        function createMountains() {
+            mountainGroup = new THREE.Group();
+
+            // 远山1
+            const mountain1Geo = new THREE.ConeGeometry(8, 12, 8);
+            const mountain1Mat = new THREE.MeshStandardMaterial({
+                color: 0x2c3e50,
+                roughness: 0.9,
+                metalness: 0.1
+            });
+            const mountain1 = new THREE.Mesh(mountain1Geo, mountain1Mat);
+            mountain1.position.set(-25, 5, -15);
+            mountain1.scale.y = 1.5;
+            mountainGroup.add(mountain1);
+
+            // 远山2
+            const mountain2Geo = new THREE.ConeGeometry(6, 10, 8);
+            const mountain2Mat = new THREE.MeshStandardMaterial({
+                color: 0x34495e,
+                roughness: 0.9,
+                metalness: 0.1
+            });
+            const mountain2 = new THREE.Mesh(mountain2Geo, mountain2Mat);
+            mountain2.position.set(25, 4, -10);
+            mountain2.scale.y = 1.3;
+            mountainGroup.add(mountain2);
+
+            // 近山1
+            const hill1Geo = new THREE.SphereGeometry(5, 16, 16);
+            const hill1Mat = new THREE.MeshStandardMaterial({
+                color: 0x4a5568,
+                roughness: 0.8,
+                metalness: 0.1
+            });
+            const hill1 = new THREE.Mesh(hill1Geo, hill1Mat);
+            hill1.position.set(-18, 2, 10);
+            hill1.scale.set(2, 1, 1.5);
+            mountainGroup.add(hill1);
+
+            // 近山2
+            const hill2Geo = new THREE.SphereGeometry(4, 16, 16);
+            const hill2Mat = new THREE.MeshStandardMaterial({
+                color: 0x434d5b,
+                roughness: 0.8,
+                metalness: 0.1
+            });
+            const hill2 = new THREE.Mesh(hill2Geo, hill2Mat);
+            hill2.position.set(18, 2.5, 8);
+            hill2.scale.set(1.8, 1.2, 1.3);
+            mountainGroup.add(hill2);
+
+            // 左侧山体群
+            const leftMountainGeo = new THREE.CylinderGeometry(0, 6, 8, 8);
+            const leftMountainMat = new THREE.MeshStandardMaterial({
+                color: 0x3d4852,
+                roughness: 0.9,
+                metalness: 0.1
+            });
+            const leftMountain = new THREE.Mesh(leftMountainGeo, leftMountainMat);
+            leftMountain.position.set(-20, 3, 5);
+            leftMountain.scale.set(1.5, 1, 2);
+            mountainGroup.add(leftMountain);
+
+            // 右侧山体群
+            const rightMountainGeo = new THREE.CylinderGeometry(0, 5, 7, 8);
+            const rightMountainMat = new THREE.MeshStandardMaterial({
+                color: 0x4a5568,
+                roughness: 0.9,
+                metalness: 0.1
+            });
+            const rightMountain = new THREE.Mesh(rightMountainGeo, rightMountainMat);
+            rightMountain.position.set(20, 3.5, 3);
+            rightMountain.scale.set(1.3, 1, 1.8);
+            mountainGroup.add(rightMountain);
+
+            scene.add(mountainGroup);
+        }
+
+        // 创建大坝
+        function createDam() {
+            damGroup = new THREE.Group();
+
+            // 大坝主体
+            const damGeometry = new THREE.BoxGeometry(12, 8, 3);
+            const damMaterial = new THREE.MeshStandardMaterial({
+                color: 0x95a5a6,
+                roughness: 0.6,
+                metalness: 0.3
+            });
+            const dam = new THREE.Mesh(damGeometry, damMaterial);
+            dam.position.set(0, 3.5, 0);
+            dam.castShadow = true;
+            dam.receiveShadow = true;
+            damGroup.add(dam);
+
+            // 大坝顶部
+            const topGeometry = new THREE.BoxGeometry(12.2, 0.5, 3.2);
+            const topMaterial = new THREE.MeshStandardMaterial({
+                color: 0xbdc3c7,
+                roughness: 0.5,
+                metalness: 0.4
+            });
+            const top = new THREE.Mesh(topGeometry, topMaterial);
+            top.position.set(0, 7.75, 0);
+            top.castShadow = true;
+            damGroup.add(top);
+
+            // 大坝左侧斜面
+            const leftSlopeGeo = new THREE.BoxGeometry(1, 8, 3);
+            const leftSlopeMat = new THREE.MeshStandardMaterial({
+                color: 0x7f8c8d,
+                roughness: 0.7,
+                metalness: 0.2
+            });
+            const leftSlope = new THREE.Mesh(leftSlopeGeo, leftSlopeMat);
+            leftSlope.position.set(-5.7, 3.5, 0);
+            leftSlope.castShadow = true;
+            damGroup.add(leftSlope);
+
+            // 闸门
+            const gatePositions = [-3, 0, 3];
+            gatePositions.forEach((x, i) => {
+                const gateGeo = new THREE.BoxGeometry(2, 5, 2.8);
+                const gateMat = new THREE.MeshStandardMaterial({
+                    color: 0xe67e22,
+                    roughness: 0.5,
+                    metalness: 0.6
+                });
+                const gate = new THREE.Mesh(gateGeo, gateMat);
+                gate.position.set(x, 2, 0);
+                gate.castShadow = true;
+                gate.name = `gate${i}`;
+                gateMeshes.push(gate);
+                damGroup.add(gate);
+
+                // 闸门框架
+                const frameGeo = new THREE.BoxGeometry(2.2, 0.3, 3);
+                const frameMat = new THREE.MeshStandardMaterial({
+                    color: 0x5d6d7e,
+                    roughness: 0.4,
+                    metalness: 0.5
+                });
+                const topFrame = new THREE.Mesh(frameGeo, frameMat);
+                topFrame.position.set(x, 5.15, 0);
+                topFrame.castShadow = true;
+                damGroup.add(topFrame);
+            });
+
+            // 泄洪口效果
+            createWaterFlow();
+
+            scene.add(damGroup);
+        }
+
+        // 创建水流效果
+        function createWaterFlow() {
+            const flowGroup = new THREE.Group();
+
+            // 水流粒子
+            const particleCount = 100;
+            const flowGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const velocities = new Float32Array(particleCount);
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 8;
+                positions[i * 3 + 1] = 3;
+                positions[i * 3 + 2] = Math.random() * 20;
+                velocities[i] = 0.1 + Math.random() * 0.2;
+            }
+
+            flowGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            
+            const flowMaterial = new THREE.PointsMaterial({
+                color: 0x3498db,
+                size: 0.15,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            const flowParticles = new THREE.Points(flowGeometry, flowMaterial);
+            waterFlowParticles.push({
+                particles: flowParticles,
+                velocities: velocities,
+                originY: 3
+            });
+            flowGroup.add(flowParticles);
+
+            damGroup.add(flowGroup);
+        }
+
+        // 创建水体
+        function createWater() {
+            waterGroup = new THREE.Group();
+
+            // 水库水面
+            const reservoirGeometry = new THREE.PlaneGeometry(16, 12);
+            const reservoirMaterial = new THREE.MeshStandardMaterial({
+                color: 0x2980b9,
+                transparent: true,
+                opacity: 0.7,
+                roughness: 0.3,
+                metalness: 0.3
+            });
+            const reservoir = new THREE.Mesh(reservoirGeometry, reservoirMaterial);
+            reservoir.rotation.x = -Math.PI / 2;
+            reservoir.position.set(0, 7.9, -8);
+            waterGroup.add(reservoir);
+
+            // 水库边缘
+            const edgeGeometry = new THREE.BoxGeometry(16.2, 0.2, 12.2);
+            const edgeMaterial = new THREE.MeshStandardMaterial({
+                color: 0x1a5276,
+                roughness: 0.5,
+                metalness: 0.2
+            });
+            const edge = new THREE.Mesh(edgeGeometry, edgeMaterial);
+            edge.position.set(0, 7.8, -8);
+            waterGroup.add(edge);
+
+            // 下游河流
+            const riverGeometry = new THREE.BufferGeometry();
+            const riverShape = new THREE.Shape();
+            riverShape.moveTo(0, 0);
+            riverShape.quadraticCurveTo(5, 2, 10, 0);
+            riverShape.quadraticCurveTo(15, -2, 20, 0);
+            riverShape.quadraticCurveTo(25, 1, 30, 0);
+            riverShape.lineTo(30, -1);
+            riverShape.quadraticCurveTo(25, -2, 20, -1);
+            riverShape.quadraticCurveTo(15, 0, 10, -1);
+            riverShape.quadraticCurveTo(5, -2, 0, -1);
+            riverShape.closePath();
+
+            const extrudeSettings = {
+                depth: 0.1,
+                bevelEnabled: false
+            };
+
+            const riverGeo = new THREE.ExtrudeGeometry(riverShape, extrudeSettings);
+            const riverMat = new THREE.MeshStandardMaterial({
+                color: 0x3498db,
+                transparent: true,
+                opacity: 0.6,
+                roughness: 0.4,
+                metalness: 0.2
+            });
+            const river = new THREE.Mesh(riverGeo, riverMat);
+            river.rotation.x = -Math.PI / 2;
+            river.position.set(6, 0.1, 5);
+            river.scale.set(0.8, 1, 0.8);
+            waterGroup.add(river);
+
+            // 水面波纹动画
+            const rippleGeometry = new THREE.RingGeometry(0.5, 1, 32);
+            const rippleMaterial = new THREE.MeshStandardMaterial({
+                color: 0x5dade2,
+                transparent: true,
+                opacity: 0.3,
+                side: THREE.DoubleSide
+            });
+            
+            for (let i = 0; i < 3; i++) {
+                const ripple = new THREE.Mesh(rippleGeometry, rippleMaterial);
+                ripple.rotation.x = -Math.PI / 2;
+                ripple.position.set(0, 8, -8 + i * 2);
+                ripple.userData = { phase: i * 2, speed: 0.02 + i * 0.01 };
+                waterGroup.add(ripple);
+            }
+
+            scene.add(waterGroup);
+        }
+
+        // 创建建筑群
+        function createBuildings() {
+            buildingGroup = new THREE.Group();
+
+            // 住宅区 - 多层住宅楼
+            const residentialColors = [0x7f8c8d, 0x95a5a6, 0x85929e];
+            for (let i = 0; i < 5; i++) {
+                const width = 1.5 + Math.random();
+                const height = 2 + Math.random() * 3;
+                const depth = 1.5 + Math.random();
+                
+                const buildingGeo = new THREE.BoxGeometry(width, height, depth);
+                const buildingMat = new THREE.MeshStandardMaterial({
+                    color: residentialColors[i % residentialColors.length],
+                    roughness: 0.7,
+                    metalness: 0.1
+                });
+                const building = new THREE.Mesh(buildingGeo, buildingMat);
+                building.position.set(-12 + (i % 3) * 3, height / 2, 15 + Math.floor(i / 3) * 3);
+                building.castShadow = true;
+                building.receiveShadow = true;
+
+                // 屋顶
+                const roofGeo = new THREE.BoxGeometry(width + 0.1, 0.3, depth + 0.1);
+                const roofMat = new THREE.MeshStandardMaterial({
+                    color: 0xc0392b,
+                    roughness: 0.8,
+                    metalness: 0.1
+                });
+                const roof = new THREE.Mesh(roofGeo, roofMat);
+                roof.position.set(0, height / 2 + 0.15, 0);
+                building.add(roof);
+
+                // 窗户
+                for (let fy = 0; fy < Math.floor(height); fy++) {
+                    for (let fx = 0; fx < 2; fx++) {
+                        const windowGeo = new THREE.BoxGeometry(0.2, 0.3, 0.02);
+                        const windowMat = new THREE.MeshStandardMaterial({
+                            color: 0xf1c40f,
+                            roughness: 0.2,
+                            metalness: 0.1,
+                            emissive: 0xf1c40f,
+                            emissiveIntensity: 0.3
+                        });
+                        const windowMesh = new THREE.Mesh(windowGeo, windowMat);
+                        windowMesh.position.set(
+                            (fx - 0.5) * (width - 0.5),
+                            -height / 2 + 0.5 + fy * 0.8,
+                            depth / 2 + 0.02
+                        );
+                        building.add(windowMesh);
+                    }
+                }
+
+                buildingGroup.add(building);
+            }
+
+            // 商业区 - 高层建筑
+            const commercialGeo = new THREE.BoxGeometry(2, 8, 2);
+            const commercialMat = new THREE.MeshStandardMaterial({
+                color: 0x85929e,
+                roughness: 0.5,
+                metalness: 0.3
+            });
+            const commercial = new THREE.Mesh(commercialGeo, commercialMat);
+            commercial.position.set(15, 4, 12);
+            commercial.castShadow = true;
+            commercial.receiveShadow = true;
+
+            // 商业建筑玻璃幕墙
+            for (let fy = 0; fy < 8; fy++) {
+                for (let fx = 0; fx < 3; fx++) {
+                    for (let fz = 0; fz < 3; fz++) {
+                        const glassGeo = new THREE.BoxGeometry(0.4, 0.6, 0.01);
+                        const glassMat = new THREE.MeshStandardMaterial({
+                            color: 0x3498db,
+                            transparent: true,
+                            opacity: 0.6,
+                            roughness: 0.2,
+                            metalness: 0.4
+                        });
+                        const glass = new THREE.Mesh(glassGeo, glassMat);
+                        glass.position.set(
+                            (fx - 1) * 0.7,
+                            -4 + 0.5 + fy * 0.95,
+                            (fz - 1) * 0.7 + 1.01
+                        );
+                        commercial.add(glass);
+                    }
+                }
+            }
+            buildingGroup.add(commercial);
+
+            // 办公楼
+            const officeGeo = new THREE.BoxGeometry(3, 6, 3);
+            const officeMat = new THREE.MeshStandardMaterial({
+                color: 0x6c7a89,
+                roughness: 0.6,
+                metalness: 0.2
+            });
+            const office = new THREE.Mesh(officeGeo, officeMat);
+            office.position.set(12, 3, 18);
+            office.castShadow = true;
+            office.receiveShadow = true;
+
+            // 办公楼窗户
+            for (let fy = 0; fy < 6; fy++) {
+                for (let fx = 0; fx < 4; fx++) {
+                    for (let fz = 0; fz < 4; fz++) {
+                        const winGeo = new THREE.BoxGeometry(0.3, 0.5, 0.01);
+                        const winMat = new THREE.MeshStandardMaterial({
+                            color: 0xf1c40f,
+                            roughness: 0.3,
+                            metalness: 0.1,
+                            emissive: 0xf1c40f,
+                            emissiveIntensity: 0.2
+                        });
+                        const win = new THREE.Mesh(winGeo, winMat);
+                        win.position.set(
+                            (fx - 1.5) * 0.75,
+                            -3 + 0.4 + fy * 0.85,
+                            (fz - 1.5) * 0.75 + 1.51
+                        );
+                        office.add(win);
+                    }
+                }
+            }
+            buildingGroup.add(office);
+
+            // 工业建筑
+            const factoryGeo = new THREE.BoxGeometry(4, 3, 4);
+            const factoryMat = new THREE.MeshStandardMaterial({
+                color: 0x5d6d7e,
+                roughness: 0.8,
+                metalness: 0.3
+            });
+            const factory = new THREE.Mesh(factoryGeo, factoryMat);
+            factory.position.set(8, 1.5, 8);
+            factory.castShadow = true;
+            factory.receiveShadow = true;
+
+            // 烟囱
+            const chimneyGeo = new THREE.CylinderGeometry(0.3, 0.4, 5, 8);
+            const chimneyMat = new THREE.MeshStandardMaterial({
+                color: 0x7f8c8d,
+                roughness: 0.7,
+                metalness: 0.2
+            });
+            const chimney = new THREE.Mesh(chimneyGeo, chimneyMat);
+            chimney.position.set(9.5, 5, 8);
+            chimney.castShadow = true;
+            buildingGroup.add(chimney);
+
+            // 厂房窗户
+            for (let fx = 0; fx < 4; fx++) {
+                const winGeo = new THREE.BoxGeometry(0.5, 1, 0.02);
+                const winMat = new THREE.MeshStandardMaterial({
+                    color: 0xf1c40f,
+                    roughness: 0.3,
+                    metalness: 0.1
+                });
+                const win = new THREE.Mesh(winGeo, winMat);
+                win.position.set(
+                    (fx - 1.5) * 1.1,
+                    0,
+                    2.01
+                );
+                factory.add(win);
+            }
+            buildingGroup.add(factory);
+
+            scene.add(buildingGroup);
+        }
+
+        // 创建道路和桥梁
+        function createRoads() {
+            // 道路材质
+            const roadMaterial = new THREE.MeshStandardMaterial({
+                color: 0x5d6d7e,
+                roughness: 0.8,
+                metalness: 0.2
+            });
+
+            // 主干道
+            const roadGeo = new THREE.BoxGeometry(20, 0.1, 0.8);
+            const mainRoad = new THREE.Mesh(roadGeo, roadMaterial);
+            mainRoad.position.set(-5, 0.05, 15);
+            scene.add(mainRoad);
+
+            // 支路
+            const sideRoadGeo = new THREE.BoxGeometry(10, 0.1, 0.6);
+            const sideRoad1 = new THREE.Mesh(sideRoadGeo, roadMaterial);
+            sideRoad1.rotation.y = Math.PI / 2;
+            sideRoad1.position.set(-12, 0.05, 12);
+            scene.add(sideRoad1);
+
+            // 桥梁
+            const bridgeGeo = new THREE.BoxGeometry(8, 0.3, 1);
+            const bridgeMaterial = new THREE.MeshStandardMaterial({
+                color: 0x95a5a6,
+                roughness: 0.6,
+                metalness: 0.3
+            });
+            const bridge = new THREE.Mesh(bridgeGeo, bridgeMaterial);
+            bridge.position.set(-8, 0.2, 2);
+            bridge.castShadow = true;
+            scene.add(bridge);
+
+            // 桥梁支柱
+            const pillarGeo = new THREE.BoxGeometry(0.4, 2, 1.2);
+            const pillarMat = new THREE.MeshStandardMaterial({
+                color: 0x7f8c8d,
+                roughness: 0.7,
+                metalness: 0.3
+            });
+            const pillar1 = new THREE.Mesh(pillarGeo, pillarMat);
+            pillar1.position.set(-11, -0.7, 2);
+            scene.add(pillar1);
+
+            const pillar2 = new THREE.Mesh(pillarGeo, pillarMat);
+            pillar2.position.set(-5, -0.7, 2);
+            scene.add(pillar2);
+        }
+
+        // 创建植被
+        function createVegetation() {
+            // 树木组
+            const treePositions = [
+                [-15, 16], [-18, 14], [-13, 18],
+                [18, 15], [20, 13], [16, 17],
+                [-20, 5], [-18, 8],
+                [22, 5], [20, 8]
+            ];
+
+            treePositions.forEach((pos, i) => {
+                // 树干
+                const trunkGeo = new THREE.CylinderGeometry(0.15, 0.2, 1.5, 8);
+                const trunkMat = new THREE.MeshStandardMaterial({
+                    color: 0x8b4513,
+                    roughness: 0.8,
+                    metalness: 0.1
+                });
+                const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+                trunk.position.set(pos[0], 0.75, pos[1]);
+                trunk.castShadow = true;
+                scene.add(trunk);
+
+                // 树冠
+                const crownGeo = new THREE.SphereGeometry(0.8 + Math.random() * 0.4, 8, 8);
+                const crownMat = new THREE.MeshStandardMaterial({
+                    color: i % 2 === 0 ? 0x27ae60 : 0x2ecc71,
+                    roughness: 0.7,
+                    metalness: 0.1
+                });
+                const crown = new THREE.Mesh(crownGeo, crownMat);
+                crown.position.set(pos[0], 2.5 + Math.random() * 0.5, pos[1]);
+                crown.castShadow = true;
+                scene.add(crown);
+            });
+
+            // 灌木
+            const bushPositions = [
+                [-14, 15], [-16, 17],
+                [17, 16], [19, 14],
+                [-5, 20], [5, 20]
+            ];
+
+            bushPositions.forEach(pos => {
+                const bushGeo = new THREE.SphereGeometry(0.4, 8, 8);
+                const bushMat = new THREE.MeshStandardMaterial({
+                    color: 0x58d68d,
+                    roughness: 0.8,
+                    metalness: 0.1
+                });
+                const bush = new THREE.Mesh(bushGeo, bushMat);
+                bush.position.set(pos[0], 0.4, pos[1]);
+                scene.add(bush);
+            });
+        }
+
+        // 创建雨水效果
+        function createRain() {
+            const rainCount = 5000;
+            const rainGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(rainCount * 3);
+            const velocities = new Float32Array(rainCount);
+
+            for (let i = 0; i < rainCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 100;
+                positions[i * 3 + 1] = Math.random() * 30;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+                velocities[i] = 5 + Math.random() * 5;
+            }
+
+            rainGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const rainMaterial = new THREE.PointsMaterial({
+                color: 0x5dade2,
+                size: 0.05,
+                transparent: true,
+                opacity: 0.6
+            });
+
+            rainParticles = new THREE.Points(rainGeometry, rainMaterial);
+            rainParticles.userData.velocities = velocities;
+            rainParticles.visible = true; // 默认显示雨水效果
+            scene.add(rainParticles);
+        }
+
+        // 创建监测点
+        function createMonitoringPoints() {
+            const monitorPositions = [
+                { pos: [0, 8.5, 0], label: '大坝监测点' },
+                { pos: [0, 8, -8], label: '水库监测点' },
+                { pos: [15, 9, 12], label: '水位监测站' }
+            ];
+
+            monitorPositions.forEach(monitor => {
+                // 监测设备基座
+                const baseGeo = new THREE.CylinderGeometry(0.3, 0.4, 0.2, 8);
+                const baseMat = new THREE.MeshStandardMaterial({
+                    color: 0x7f8c8d,
+                    roughness: 0.6,
+                    metalness: 0.3
+                });
+                const base = new THREE.Mesh(baseGeo, baseMat);
+                base.position.set(monitor.pos[0], monitor.pos[1], monitor.pos[2]);
+                scene.add(base);
+
+                // 监测杆
+                const poleGeo = new THREE.CylinderGeometry(0.05, 0.05, 2, 8);
+                const poleMat = new THREE.MeshStandardMaterial({
+                    color: 0x95a5a6,
+                    roughness: 0.5,
+                    metalness: 0.4
+                });
+                const pole = new THREE.Mesh(poleGeo, poleMat);
+                pole.position.set(monitor.pos[0], monitor.pos[1] + 1.1, monitor.pos[2]);
+                scene.add(pole);
+
+                // 传感器（发光球）
+                const sensorGeo = new THREE.SphereGeometry(0.15, 16, 16);
+                const sensorMat = new THREE.MeshStandardMaterial({
+                    color: 0xe74c3c,
+                    emissive: 0xe74c3c,
+                    emissiveIntensity: 0.8,
+                    roughness: 0.3,
+                    metalness: 0.5
+                });
+                const sensor = new THREE.Mesh(sensorGeo, sensorMat);
+                sensor.position.set(monitor.pos[0], monitor.pos[1] + 2.3, monitor.pos[2]);
+                sensor.castShadow = true;
+                scene.add(sensor);
+            });
+        }
+
+        // 切换视角模式
+        function toggleViewMode() {
+            if (isOrthographic) {
+                // 切换回透视视角
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.set(15, 12, 20);
+            } else {
+                // 切换到正交视角
+                camera = new THREE.OrthographicCamera(
+                    -20, 20, 20, -20, 0.1, 1000
+                );
+                camera.position.set(25, 25, 25);
+                camera.lookAt(0, 0, 0);
+            }
+            isOrthographic = !isOrthographic;
+            controls.object = camera;
+            controls.update();
+        }
+
+        // 更新闸门
+        function updateGates(percentage) {
+            const gateOffset = (percentage / 100) * 4;
+            gateMeshes.forEach(gate => {
+                gate.position.y = 2 - gateOffset;
+            });
+        }
+
+        // 窗口调整
+        function onWindowResize() {
+            const container = document.getElementById('scene-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 更新控制器
+            controls.update();
+
+            // 更新雨水粒子
+            if (rainParticles && rainParticles.visible) {
+                const positions = rainParticles.geometry.attributes.position.array;
+                const velocities = rainParticles.userData.velocities;
+                
+                for (let i = 0; i < velocities.length; i++) {
+                    positions[i * 3 + 1] -= velocities[i] * 0.05;
+                    if (positions[i * 3 + 1] < 0) {
+                        positions[i * 3 + 1] = 30;
+                        positions[i * 3] = (Math.random() - 0.5) * 100;
+                        positions[i * 3 + 2] = (Math.random() - 0.5) * 100;
+                    }
+                }
+                rainParticles.geometry.attributes.position.needsUpdate = true;
+            }
+
+            // 更新水流粒子
+            waterFlowParticles.forEach(flow => {
+                const positions = flow.particles.geometry.attributes.position.array;
+                const velocities = flow.velocities;
+                
+                for (let i = 0; i < velocities.length; i++) {
+                    positions[i * 3 + 1] -= velocities[i] * 0.3;
+                    positions[i * 3 + 2] += velocities[i] * 0.2;
+                    
+                    if (positions[i * 3 + 1] < -2 || positions[i * 3 + 2] > 25) {
+                        positions[i * 3] = (Math.random() - 0.5) * 8;
+                        positions[i * 3 + 1] = flow.originY;
+                        positions[i * 3 + 2] = 0;
+                    }
+                }
+                flow.particles.geometry.attributes.position.needsUpdate = true;
+            });
+
+            // 更新水面波纹
+            waterGroup.children.forEach(child => {
+                if (child.userData.phase !== undefined) {
+                    child.scale.x = 1 + Math.sin(Date.now() * 0.001 * child.userData.speed + child.userData.phase) * 0.2;
+                    child.scale.y = 1 + Math.sin(Date.now() * 0.001 * child.userData.speed + child.userData.phase) * 0.2;
+                    child.material.opacity = 0.3 - Math.sin(Date.now() * 0.001 * child.userData.speed + child.userData.phase) * 0.1;
+                }
+            });
+
+            // 渲染场景
+            renderer.render(scene, camera);
+        }
+
+        // 闸门控制
+        const gateSlider = document.getElementById('gateSlider');
+        const gateValue = document.getElementById('gateValue');
+        
+        gateSlider.addEventListener('input', function() {
+            gateValue.textContent = this.value + '%';
+            updateGates(this.value);
+        });
+
+        function updateGates(percentage) {
+            const gates = document.querySelectorAll('.dam-gate');
+            gates.forEach((gate, index) => {
+                const offset = (percentage / 100) * 80;
+                gate.setAttribute('transform', `translate(0, ${offset})`);
+            });
+        }
+
+        // 模拟控制
+        let simulationRunning = false;
+        let simulationSpeed = 1;
+        let simulationInterval;
+
+        function playSimulation() {
+            simulationRunning = true;
+            simulationInterval = setInterval(updateSimulation, 1000 / simulationSpeed);
+        }
+
+        function pauseSimulation() {
+            simulationRunning = false;
+            clearInterval(simulationInterval);
+        }
+
+        function resetSimulation() {
+            pauseSimulation();
+            gateSlider.value = 35;
+            gateValue.textContent = '35%';
+            updateGates(35);
+        }
+
+        function stepForward() {
+            updateSimulation();
+        }
+
+        function stepBackward() {
+            // 简化处理，实际应用中需要历史数据
+        }
+
+        function setSpeed(speed) {
+            simulationSpeed = speed;
+            document.querySelectorAll('.speed-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            if (simulationRunning) {
+                pauseSimulation();
+                playSimulation();
+            }
+        }
+
+        function updateSimulation() {
+            // 更新模拟数据
+            // 在实际应用中，这里会调用后端API获取实时数据
+        }
+
+        // 调度控制函数
+        function startMPC() {
+            alert('自动化调度系统已启动，正在进行MPC优化计算...');
+        }
+
+        function generateCurve() {
+            alert('预测曲线生成中...');
+        }
+
+        function adjustGate() {
+            alert('闸门调节命令已发送');
+        }
+
+        function systemReset() {
+            resetSimulation();
+            alert('系统已复位');
+        }
+
+        // 预案选择
+        function selectPlan(plan) {
+            document.querySelectorAll('.plan-item').forEach(item => item.classList.remove('active'));
+            event.target.classList.add('active');
+            console.log('Selected plan:', plan);
+        }
+
+        // 初始化
+        init3DScene();
+        updateGates(35);
+    </script>
+</body>
+</html>
