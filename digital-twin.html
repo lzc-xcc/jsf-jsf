@@ -386,6 +386,124 @@
             color: white;
         }
 
+        /* 模拟控制面板 */
+        .simulation-panel {
+            background: rgba(26, 42, 74, 0.6);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+            margin-top: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+        }
+
+        .input-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(52, 152, 219, 0.3);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .input-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.5);
+        }
+
+        .input-group input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #3498db;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.5);
+        }
+
+        .input-value {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #3498db;
+            margin-top: 5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .input-group select {
+            width: 100%;
+            padding: 10px;
+            background: rgba(52, 152, 219, 0.2);
+            border: 1px solid rgba(52, 152, 219, 0.4);
+            border-radius: 6px;
+            color: white;
+            font-size: 0.85rem;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .input-group select option {
+            background: #1a2a4a;
+            color: white;
+        }
+
+        .sim-control-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .sim-btn-start, .sim-btn-pause, .sim-btn-reset {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sim-btn-start {
+            background: linear-gradient(135deg, #27ae60, #1e8449);
+            color: white;
+        }
+
+        .sim-btn-start:hover {
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .sim-btn-pause {
+            background: linear-gradient(135deg, #f39c12, #d68910);
+            color: white;
+        }
+
+        .sim-btn-pause:hover {
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+        }
+
+        .sim-btn-reset {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .sim-btn-reset:hover {
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+
         /* 右侧面板 */
         .right-panel {
             width: 380px;
@@ -914,6 +1032,50 @@
                     </div>
                     <input type="range" id="gateSlider" min="0" max="100" value="35">
                 </div>
+                
+                <!-- 交互式模拟控制 -->
+                <div class="panel-title" style="margin-top: 20px;">🎯 防洪模拟控制</div>
+                <div class="simulation-panel">
+                    <div class="input-group">
+                        <label>降雨量 (mm/h)</label>
+                        <input type="range" id="rainfallSlider" min="0" max="50" value="15" step="1">
+                        <div class="input-value" id="rainfallValue">15 mm/h</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>上游来水量 (m³/s)</label>
+                        <input type="range" id="inflowSlider" min="0" max="500" value="156" step="1">
+                        <div class="input-value" id="inflowValue">156 m³/s</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>水库水位 (m)</label>
+                        <input type="range" id="waterLevelSlider" min="5" max="45" value="32.5" step="0.5">
+                        <div class="input-value" id="waterLevelValue">32.5 m</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>泄洪流量 (m³/s)</label>
+                        <input type="range" id="outflowSlider" min="0" max="300" value="50" step="1">
+                        <div class="input-value" id="outflowValue">50 m³/s</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>预警级别</label>
+                        <select id="alertLevel">
+                            <option value="1">Level 1 - 常态</option>
+                            <option value="2">Level 2 - 弱降雨</option>
+                            <option value="3" selected>Level 3 - 较强降雨</option>
+                            <option value="4">Level 4 - 极端暴雨</option>
+                        </select>
+                    </div>
+                    
+                    <div class="sim-control-buttons">
+                        <button class="sim-btn-start" onclick="startSimulation()">▶ 开始模拟</button>
+                        <button class="sim-btn-pause" onclick="pauseSimulation()">⏸ 暂停模拟</button>
+                        <button class="sim-btn-reset" onclick="resetSimulation()">🔄 重置模拟</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1428,64 +1590,142 @@
         function createWater() {
             waterGroup = new THREE.Group();
 
-            // 水库水面
-            const reservoirGeometry = new THREE.PlaneGeometry(16, 12);
+            // 扩大水库水面
+            const reservoirGeometry = new THREE.PlaneGeometry(25, 18);
             const reservoirMaterial = new THREE.MeshStandardMaterial({
                 color: 0x2980b9,
                 transparent: true,
-                opacity: 0.7,
+                opacity: 0.75,
                 roughness: 0.3,
                 metalness: 0.3
             });
             const reservoir = new THREE.Mesh(reservoirGeometry, reservoirMaterial);
             reservoir.rotation.x = -Math.PI / 2;
-            reservoir.position.set(0, 7.9, -8);
+            reservoir.position.set(0, 7.9, -10);
+            reservoir.userData.isWater = true;
             waterGroup.add(reservoir);
 
             // 水库边缘
-            const edgeGeometry = new THREE.BoxGeometry(16.2, 0.2, 12.2);
+            const edgeGeometry = new THREE.BoxGeometry(25.2, 0.3, 18.2);
             const edgeMaterial = new THREE.MeshStandardMaterial({
                 color: 0x1a5276,
                 roughness: 0.5,
                 metalness: 0.2
             });
             const edge = new THREE.Mesh(edgeGeometry, edgeMaterial);
-            edge.position.set(0, 7.8, -8);
+            edge.position.set(0, 7.8, -10);
             waterGroup.add(edge);
 
-            // 下游河流
-            const riverGeometry = new THREE.BufferGeometry();
-            const riverShape = new THREE.Shape();
-            riverShape.moveTo(0, 0);
-            riverShape.quadraticCurveTo(5, 2, 10, 0);
-            riverShape.quadraticCurveTo(15, -2, 20, 0);
-            riverShape.quadraticCurveTo(25, 1, 30, 0);
-            riverShape.lineTo(30, -1);
-            riverShape.quadraticCurveTo(25, -2, 20, -1);
-            riverShape.quadraticCurveTo(15, 0, 10, -1);
-            riverShape.quadraticCurveTo(5, -2, 0, -1);
-            riverShape.closePath();
+            // 扩大下游河道 - 3D河床
+            const riverBedShape = new THREE.Shape();
+            riverBedShape.moveTo(0, 0);
+            riverBedShape.quadraticCurveTo(12, 4, 24, 0);
+            riverBedShape.quadraticCurveTo(36, -4, 48, 0);
+            riverBedShape.quadraticCurveTo(60, 3, 72, 0);
+            riverBedShape.quadraticCurveTo(84, -2, 96, 0);
+            riverBedShape.lineTo(96, -3);
+            riverBedShape.quadraticCurveTo(84, -5, 72, -2);
+            riverBedShape.quadraticCurveTo(60, 0, 48, -2);
+            riverBedShape.quadraticCurveTo(36, -3, 24, -2);
+            riverBedShape.quadraticCurveTo(12, -4, 0, -2);
+            riverBedShape.closePath();
 
-            const extrudeSettings = {
-                depth: 0.1,
+            // 河床
+            const riverBedGeo = new THREE.ExtrudeGeometry(riverBedShape, {
+                depth: 2,
                 bevelEnabled: false
-            };
+            });
+            const riverBedMat = new THREE.MeshStandardMaterial({
+                color: 0x2c3e50,
+                roughness: 0.8,
+                metalness: 0.1
+            });
+            const riverBed = new THREE.Mesh(riverBedGeo, riverBedMat);
+            riverBed.rotation.x = -Math.PI / 2;
+            riverBed.position.set(6, -1, 5);
+            riverBed.scale.set(1.2, 1, 1.2);
+            waterGroup.add(riverBed);
 
-            const riverGeo = new THREE.ExtrudeGeometry(riverShape, extrudeSettings);
-            const riverMat = new THREE.MeshStandardMaterial({
+            // 扩大河水水面
+            const riverWaterShape = new THREE.Shape();
+            riverWaterShape.moveTo(0.8, 0);
+            riverWaterShape.quadraticCurveTo(12, 3.5, 23.5, 0);
+            riverWaterShape.quadraticCurveTo(35.5, -3.5, 47.5, 0);
+            riverWaterShape.quadraticCurveTo(59.5, 2.5, 71.5, 0);
+            riverWaterShape.quadraticCurveTo(83.5, -1.5, 95.5, 0);
+            riverWaterShape.lineTo(95.5, -2.2);
+            riverWaterShape.quadraticCurveTo(83.5, -4, 71.5, -2);
+            riverWaterShape.quadraticCurveTo(59.5, 0, 47.5, -1.5);
+            riverWaterShape.quadraticCurveTo(35.5, -2.5, 23.5, -1.5);
+            riverWaterShape.quadraticCurveTo(12, -3, 0.8, -1.5);
+            riverWaterShape.closePath();
+
+            const riverWaterGeo = new THREE.ExtrudeGeometry(riverWaterShape, {
+                depth: 1,
+                bevelEnabled: false
+            });
+            const riverWaterMat = new THREE.MeshStandardMaterial({
                 color: 0x3498db,
                 transparent: true,
-                opacity: 0.6,
-                roughness: 0.4,
+                opacity: 0.75,
+                roughness: 0.3,
                 metalness: 0.2
             });
-            const river = new THREE.Mesh(riverGeo, riverMat);
-            river.rotation.x = -Math.PI / 2;
-            river.position.set(6, 0.1, 5);
-            river.scale.set(0.8, 1, 0.8);
-            waterGroup.add(river);
+            const riverWater = new THREE.Mesh(riverWaterGeo, riverWaterMat);
+            riverWater.rotation.x = -Math.PI / 2;
+            riverWater.position.set(6, 0.2, 5);
+            riverWater.scale.set(1.2, 1, 1.2);
+            riverWater.userData.isWater = true;
+            waterGroup.add(riverWater);
 
-            // 水面波纹动画
+            // 创建流动的水流粒子 - 河流
+            createRiverFlowParticles();
+
+            // 创建流动的水流粒子 - 水库
+            createReservoirFlowParticles();
+
+            // 河道两岸
+            const bankMaterial = new THREE.MeshStandardMaterial({
+                color: 0x3d5266,
+                roughness: 0.8,
+                metalness: 0.1
+            });
+
+            // 左岸
+            const leftBankPoints = [];
+            for (let i = 0; i <= 96; i += 3) {
+                const y = Math.sin(i * 0.08) * 0.8;
+                leftBankPoints.push(new THREE.Vector2(i, y));
+            }
+            leftBankPoints.push(new THREE.Vector2(96, -1.5));
+            leftBankPoints.push(new THREE.Vector2(0, -1.5));
+            
+            const leftBankShape = new THREE.Shape(leftBankPoints.map(p => new THREE.Vector2(p.x, p.y)));
+            const leftBankExtrude = new THREE.ExtrudeGeometry(leftBankShape, { depth: 1.5, bevelEnabled: false });
+            const leftBank = new THREE.Mesh(leftBankExtrude, bankMaterial);
+            leftBank.rotation.x = -Math.PI / 2;
+            leftBank.position.set(3, 0.8, 1.5);
+            leftBank.scale.set(1.2, 1, 1.2);
+            waterGroup.add(leftBank);
+
+            // 右岸
+            const rightBankPoints = [];
+            for (let i = 0; i <= 96; i += 3) {
+                const y = Math.sin(i * 0.08 + Math.PI) * 0.8;
+                rightBankPoints.push(new THREE.Vector2(i, y));
+            }
+            rightBankPoints.push(new THREE.Vector2(96, -1.5));
+            rightBankPoints.push(new THREE.Vector2(0, -1.5));
+            
+            const rightBankShape = new THREE.Shape(rightBankPoints.map(p => new THREE.Vector2(p.x, p.y)));
+            const rightBankExtrude = new THREE.ExtrudeGeometry(rightBankShape, { depth: 1.5, bevelEnabled: false });
+            const rightBank = new THREE.Mesh(rightBankExtrude, bankMaterial);
+            rightBank.rotation.x = -Math.PI / 2;
+            rightBank.position.set(3, 0.8, 9.5);
+            rightBank.scale.set(1.2, 1, 1.2);
+            waterGroup.add(rightBank);
+
+            // 水面波纹动画 - 水库
             const rippleGeometry = new THREE.RingGeometry(0.5, 1, 32);
             const rippleMaterial = new THREE.MeshStandardMaterial({
                 color: 0x5dade2,
@@ -1494,15 +1734,103 @@
                 side: THREE.DoubleSide
             });
             
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 5; i++) {
                 const ripple = new THREE.Mesh(rippleGeometry, rippleMaterial);
                 ripple.rotation.x = -Math.PI / 2;
-                ripple.position.set(0, 8, -8 + i * 2);
+                ripple.position.set(-5 + i * 4, 8, -10 + i * 3);
                 ripple.userData = { phase: i * 2, speed: 0.02 + i * 0.01 };
                 waterGroup.add(ripple);
             }
 
+            // 河流波纹
+            for (let i = 0; i < 8; i++) {
+                const riverRipple = new THREE.Mesh(rippleGeometry, rippleMaterial);
+                riverRipple.rotation.x = -Math.PI / 2;
+                riverRipple.position.set(15 + i * 9, 1, 5);
+                riverRipple.scale.set(0.6, 0.6, 1);
+                riverRipple.userData = { phase: i * 1.5, speed: 0.03 + i * 0.01 };
+                waterGroup.add(riverRipple);
+            }
+
+            // 河流流向箭头指示
+            const flowArrowGeo = new THREE.ConeGeometry(0.3, 0.8, 8);
+            const flowArrowMat = new THREE.MeshStandardMaterial({
+                color: 0x5dade2,
+                transparent: true,
+                opacity: 0.7
+            });
+            
+            for (let i = 0; i < 6; i++) {
+                const arrow = new THREE.Mesh(flowArrowGeo, flowArrowMat);
+                arrow.rotation.z = Math.PI;
+                arrow.position.set(18 + i * 12, 1.2, 5);
+                arrow.userData = { phase: i * 0.5, bobbing: true, baseY: 1.2 };
+                waterGroup.add(arrow);
+            }
+
             scene.add(waterGroup);
+        }
+
+        // 创建河流流动粒子
+        function createRiverFlowParticles() {
+            const particleCount = 500;
+            const flowGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const velocities = new Float32Array(particleCount);
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = Math.random() * 96;
+                positions[i * 3 + 1] = 0.5 + Math.random() * 0.5;
+                positions[i * 3 + 2] = 2 + Math.random() * 6;
+                velocities[i] = 0.15 + Math.random() * 0.25;
+            }
+
+            flowGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const flowMaterial = new THREE.PointsMaterial({
+                color: 0x5dade2,
+                size: 0.2,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            const flowParticles = new THREE.Points(flowGeometry, flowMaterial);
+            flowParticles.userData = { velocities: velocities };
+            waterGroup.add(flowParticles);
+            
+            // 保存引用以便在animate中更新
+            window.riverFlowParticles = flowParticles;
+        }
+
+        // 创建水库流动粒子
+        function createReservoirFlowParticles() {
+            const particleCount = 300;
+            const flowGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const velocities = new Float32Array(particleCount);
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = -10 + Math.random() * 20;
+                positions[i * 3 + 1] = 8 + Math.random() * 0.5;
+                positions[i * 3 + 2] = -18 + Math.random() * 16;
+                velocities[i] = 0.05 + Math.random() * 0.1;
+            }
+
+            flowGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const flowMaterial = new THREE.PointsMaterial({
+                color: 0x85c1e9,
+                size: 0.15,
+                transparent: true,
+                opacity: 0.6
+            });
+
+            const flowParticles = new THREE.Points(flowGeometry, flowMaterial);
+            flowParticles.userData = { velocities: velocities };
+            waterGroup.add(flowParticles);
+            
+            // 保存引用以便在animate中更新
+            window.reservoirFlowParticles = flowParticles;
         }
 
         // 创建建筑群
@@ -1937,12 +2265,70 @@
                 flow.particles.geometry.attributes.position.needsUpdate = true;
             });
 
+            // 更新河流流动粒子
+            if (window.riverFlowParticles) {
+                const riverPositions = window.riverFlowParticles.geometry.attributes.position.array;
+                const riverVelocities = window.riverFlowParticles.userData.velocities;
+                const flowSpeed = (simParams ? simParams.outflow / 300 : 0.5);
+                
+                for (let i = 0; i < riverVelocities.length; i++) {
+                    // 粒子向X轴正方向流动（河流流向）
+                    riverPositions[i * 3] += riverVelocities[i] * 0.3 * flowSpeed;
+                    // 添加轻微的上下波动
+                    riverPositions[i * 3 + 1] += Math.sin(Date.now() * 0.005 + i * 0.1) * 0.01;
+                    // 添加轻微的横向波动
+                    riverPositions[i * 3 + 2] += Math.cos(Date.now() * 0.003 + i * 0.15) * 0.01;
+                    
+                    // 粒子流出范围后重置到起点
+                    if (riverPositions[i * 3] > 120) {
+                        riverPositions[i * 3] = 0;
+                        riverPositions[i * 3 + 1] = 0.5 + Math.random() * 0.5;
+                        riverPositions[i * 3 + 2] = 2 + Math.random() * 6;
+                    }
+                }
+                window.riverFlowParticles.geometry.attributes.position.needsUpdate = true;
+            }
+
+            // 更新水库流动粒子
+            if (window.reservoirFlowParticles) {
+                const resPositions = window.reservoirFlowParticles.geometry.attributes.position.array;
+                const resVelocities = window.reservoirFlowParticles.userData.velocities;
+                
+                for (let i = 0; i < resVelocities.length; i++) {
+                    // 水库中的水流向大坝方向流动
+                    resPositions[i * 3] += resVelocities[i] * 0.1;
+                    // 添加轻微的波动
+                    resPositions[i * 3 + 1] += Math.sin(Date.now() * 0.003 + i * 0.1) * 0.005;
+                    resPositions[i * 3 + 2] += Math.cos(Date.now() * 0.002 + i * 0.12) * 0.01;
+                    
+                    // 粒子流出水库范围后重置
+                    if (resPositions[i * 3] > 15) {
+                        resPositions[i * 3] = -12 + Math.random() * 3;
+                        resPositions[i * 3 + 1] = 8 + Math.random() * 0.5;
+                        resPositions[i * 3 + 2] = -18 + Math.random() * 16;
+                    }
+                }
+                window.reservoirFlowParticles.geometry.attributes.position.needsUpdate = true;
+            }
+
             // 更新水面波纹
             waterGroup.children.forEach(child => {
                 if (child.userData.phase !== undefined) {
                     child.scale.x = 1 + Math.sin(Date.now() * 0.001 * child.userData.speed + child.userData.phase) * 0.2;
                     child.scale.y = 1 + Math.sin(Date.now() * 0.001 * child.userData.speed + child.userData.phase) * 0.2;
                     child.material.opacity = 0.3 - Math.sin(Date.now() * 0.001 * child.userData.speed + child.userData.phase) * 0.1;
+                }
+                
+                // 更新河流箭头流动动画
+                if (child.userData.bobbing === true && child.geometry.type === 'ConeGeometry') {
+                    const flowSpeed = (simParams ? simParams.outflow / 300 : 0.5);
+                    child.position.x += 0.02 * flowSpeed;
+                    child.position.y = child.userData.baseY + Math.sin(Date.now() * 0.003 + child.userData.phase) * 0.1;
+                    
+                    // 箭头流出范围后重置
+                    if (child.position.x > 90) {
+                        child.position.x = 15;
+                    }
                 }
             });
 
@@ -1971,10 +2357,94 @@
         let simulationRunning = false;
         let simulationSpeed = 1;
         let simulationInterval;
+        
+        // 模拟参数
+        let simParams = {
+            rainfall: 15,
+            inflow: 156,
+            waterLevel: 32.5,
+            outflow: 50,
+            alertLevel: 3
+        };
 
-        function playSimulation() {
+        // 滑块控制
+        const rainfallSlider = document.getElementById('rainfallSlider');
+        const rainfallValue = document.getElementById('rainfallValue');
+        const inflowSlider = document.getElementById('inflowSlider');
+        const inflowValue = document.getElementById('inflowValue');
+        const waterLevelSlider = document.getElementById('waterLevelSlider');
+        const waterLevelValue = document.getElementById('waterLevelValue');
+        const outflowSlider = document.getElementById('outflowSlider');
+        const outflowValue = document.getElementById('outflowValue');
+        const alertLevel = document.getElementById('alertLevel');
+
+        rainfallSlider.addEventListener('input', function() {
+            simParams.rainfall = parseInt(this.value);
+            rainfallValue.textContent = this.value + ' mm/h';
+            updateRainIntensity(this.value);
+        });
+
+        inflowSlider.addEventListener('input', function() {
+            simParams.inflow = parseInt(this.value);
+            inflowValue.textContent = this.value + ' m³/s';
+        });
+
+        waterLevelSlider.addEventListener('input', function() {
+            simParams.waterLevel = parseFloat(this.value);
+            waterLevelValue.textContent = this.value + ' m';
+            updateWaterLevel(this.value);
+        });
+
+        outflowSlider.addEventListener('input', function() {
+            simParams.outflow = parseInt(this.value);
+            outflowValue.textContent = this.value + ' m³/s';
+            updateOutflow(this.value);
+        });
+
+        alertLevel.addEventListener('change', function() {
+            simParams.alertLevel = parseInt(this.value);
+            updateAlertLevel(this.value);
+        });
+
+        function updateRainIntensity(value) {
+            if (rainParticles) {
+                rainParticles.visible = value > 0;
+                const intensity = value / 50;
+                rainParticles.material.opacity = 0.3 + intensity * 0.5;
+            }
+        }
+
+        function updateWaterLevel(value) {
+            const normalizedLevel = (value - 5) / 40;
+            if (waterGroup) {
+                waterGroup.children.forEach(child => {
+                    if (child.geometry && child.geometry.type === 'PlaneGeometry') {
+                        child.position.y = 8 + normalizedLevel * 2;
+                    }
+                });
+            }
+        }
+
+        function updateOutflow(value) {
+            const percentage = value / 300;
+            updateGates(percentage * 100);
+        }
+
+        function updateAlertLevel(level) {
+            const colors = ['#27ae60', '#f39c12', '#e74c3c', '#8e44ad'];
+            const levelElements = document.querySelectorAll('.alert-item');
+            levelElements.forEach((el, i) => {
+                if (i < level) {
+                    el.style.opacity = '1';
+                } else {
+                    el.style.opacity = '0.5';
+                }
+            });
+        }
+
+        function startSimulation() {
             simulationRunning = true;
-            simulationInterval = setInterval(updateSimulation, 1000 / simulationSpeed);
+            simulationInterval = setInterval(runSimulation, 100);
         }
 
         function pauseSimulation() {
@@ -1984,9 +2454,70 @@
 
         function resetSimulation() {
             pauseSimulation();
-            gateSlider.value = 35;
-            gateValue.textContent = '35%';
+            
+            // 重置滑块
+            rainfallSlider.value = 15;
+            rainfallValue.textContent = '15 mm/h';
+            inflowSlider.value = 156;
+            inflowValue.textContent = '156 m³/s';
+            waterLevelSlider.value = 32.5;
+            waterLevelValue.textContent = '32.5 m';
+            outflowSlider.value = 50;
+            outflowValue.textContent = '50 m³/s';
+            alertLevel.value = 3;
+            
+            // 重置参数
+            simParams = {
+                rainfall: 15,
+                inflow: 156,
+                waterLevel: 32.5,
+                outflow: 50,
+                alertLevel: 3
+            };
+            
+            // 重置3D场景
             updateGates(35);
+            updateRainIntensity(15);
+            updateWaterLevel(32.5);
+            updateAlertLevel(3);
+        }
+
+        function runSimulation() {
+            // 计算水位变化
+            const rainEffect = simParams.rainfall * 0.001;
+            const inflowEffect = simParams.inflow * 0.0001;
+            const outflowEffect = simParams.outflow * 0.00015;
+            
+            simParams.waterLevel += rainEffect + inflowEffect - outflowEffect;
+            
+            // 限制水位范围
+            simParams.waterLevel = Math.max(5, Math.min(45, simParams.waterLevel));
+            
+            // 更新UI
+            waterLevelSlider.value = simParams.waterLevel;
+            waterLevelValue.textContent = simParams.waterLevel.toFixed(1) + ' m';
+            
+            // 更新3D场景
+            updateWaterLevel(simParams.waterLevel);
+            
+            // 根据水位更新预警级别
+            if (simParams.waterLevel > 40) {
+                alertLevel.value = 4;
+                simParams.alertLevel = 4;
+            } else if (simParams.waterLevel > 35) {
+                alertLevel.value = 3;
+                simParams.alertLevel = 3;
+            } else if (simParams.waterLevel > 30) {
+                alertLevel.value = 2;
+                simParams.alertLevel = 2;
+            }
+            
+            updateAlertLevel(simParams.alertLevel);
+        }
+
+        function playSimulation() {
+            simulationRunning = true;
+            simulationInterval = setInterval(updateSimulation, 1000 / simulationSpeed);
         }
 
         function stepForward() {
